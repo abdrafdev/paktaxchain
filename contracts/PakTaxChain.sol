@@ -255,7 +255,7 @@ contract PakTaxChain is Ownable, ReentrancyGuard, Pausable {
         emit NFTAwarded(taxpayer, block.timestamp);
     }
     
-    function isAuthorizedForCity(address user, string memory city) internal view returns (bool) {
+    function isAuthorizedForCity(address /*user*/, string memory /*city*/) internal pure returns (bool) {
         // This would be implemented based on your authorization logic
         // For now, return false (only owner can withdraw)
         return false;

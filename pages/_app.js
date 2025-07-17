@@ -1,6 +1,7 @@
 import '../styles/globals.css'
 import { Toaster } from 'react-hot-toast'
 import Layout from '../components/Layout'
+import { AuthProvider } from '../contexts/AuthContext'
 import { WagmiProvider, createConfig, http } from 'wagmi'
 import { mainnet, polygon, polygonMumbai, hardhat } from 'wagmi/chains'
 import { metaMask, injected } from 'wagmi/connectors'
@@ -28,10 +29,12 @@ export default function App({ Component, pageProps }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <Layout>
-          <Component {...pageProps} />
-          <Toaster position="top-right" />
-        </Layout>
+        <AuthProvider>
+          <Layout>
+            <Component {...pageProps} />
+            <Toaster position="top-right" />
+          </Layout>
+        </AuthProvider>
       </QueryClientProvider>
     </WagmiProvider>
   )

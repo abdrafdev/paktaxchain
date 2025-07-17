@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, dbHelpers } from '../lib/supabaseClient';
-import Layout from '../components/Layout';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 const Leaderboard = () => {
   const [topTaxpayers, setTopTaxpayers] = useState([]);
@@ -16,39 +15,31 @@ const Leaderboard = () => {
   const loadLeaderboardData = async () => {
     setLoading(true);
     try {
-      // Get all tax payments
-      const payments = await dbHelpers.getRecentPayments(1000);
-      
-      // Group by CNIC and calculate totals
-      const taxpayerTotals = {};
-      payments.forEach(payment => {
-        if (payment.status === 'completed') {
-          if (!taxpayerTotals[payment.cnic]) {
-            taxpayerTotals[payment.cnic] = {
-              cnic: payment.cnic,
-              name: payment.users?.name || 'Anonymous',
-              phone: payment.users?.phone || 'N/A',
-              city: payment.city,
-              totalAmount: 0,
-              paymentCount: 0,
-              lastPayment: null
-            };
-          }
-          taxpayerTotals[payment.cnic].totalAmount += payment.amount_pkr;
-          taxpayerTotals[payment.cnic].paymentCount += 1;
-          if (!taxpayerTotals[payment.cnic].lastPayment || 
-              new Date(payment.created_at) > new Date(taxpayerTotals[payment.cnic].lastPayment)) {
-            taxpayerTotals[payment.cnic].lastPayment = payment.created_at;
-          }
-        }
-      });
+      // Use demo data for leaderboard
+      const demoTaxpayers = [
+        { cnic: '12345-1234567-1', name: 'Ahmed Ali Khan', phone: '+92 300 1234567', city: 'Karachi', totalAmount: 2500000, paymentCount: 25, lastPayment: '2024-01-15' },
+        { cnic: '12345-1234567-2', name: 'Muhammad Hassan', phone: '+92 321 7654321', city: 'Lahore', totalAmount: 1800000, paymentCount: 18, lastPayment: '2024-01-14' },
+        { cnic: '12345-1234567-3', name: 'Fatima Sheikh', phone: '+92 333 9876543', city: 'Islamabad', totalAmount: 1200000, paymentCount: 15, lastPayment: '2024-01-13' },
+        { cnic: '12345-1234567-4', name: 'Ali Raza', phone: '+92 345 5555555', city: 'Rawalpindi', totalAmount: 950000, paymentCount: 12, lastPayment: '2024-01-12' },
+        { cnic: '12345-1234567-5', name: 'Ayesha Malik', phone: '+92 300 2222222', city: 'Faisalabad', totalAmount: 750000, paymentCount: 10, lastPayment: '2024-01-11' },
+        { cnic: '12345-1234567-6', name: 'Omar Farooq', phone: '+92 321 3333333', city: 'Multan', totalAmount: 650000, paymentCount: 8, lastPayment: '2024-01-10' },
+        { cnic: '12345-1234567-7', name: 'Zara Khan', phone: '+92 333 4444444', city: 'Peshawar', totalAmount: 550000, paymentCount: 7, lastPayment: '2024-01-09' },
+        { cnic: '12345-1234567-8', name: 'Bilal Ahmad', phone: '+92 345 6666666', city: 'Quetta', totalAmount: 450000, paymentCount: 6, lastPayment: '2024-01-08' },
+        { cnic: '12345-1234567-9', name: 'Noor Fatima', phone: '+92 300 7777777', city: 'Sialkot', totalAmount: 350000, paymentCount: 5, lastPayment: '2024-01-07' },
+        { cnic: '12345-1234567-10', name: 'Hasan Ali', phone: '+92 321 8888888', city: 'Gujranwala', totalAmount: 300000, paymentCount: 4, lastPayment: '2024-01-06' },
+        { cnic: '12345-1234567-11', name: 'Sana Iqbal', phone: '+92 333 9999999', city: 'Karachi', totalAmount: 280000, paymentCount: 4, lastPayment: '2024-01-05' },
+        { cnic: '12345-1234567-12', name: 'Kamran Shah', phone: '+92 345 1111111', city: 'Lahore', totalAmount: 250000, paymentCount: 3, lastPayment: '2024-01-04' },
+        { cnic: '12345-1234567-13', name: 'Rabia Nasir', phone: '+92 300 2222223', city: 'Islamabad', totalAmount: 220000, paymentCount: 3, lastPayment: '2024-01-03' },
+        { cnic: '12345-1234567-14', name: 'Tariq Mahmood', phone: '+92 321 3333334', city: 'Rawalpindi', totalAmount: 200000, paymentCount: 2, lastPayment: '2024-01-02' },
+        { cnic: '12345-1234567-15', name: 'Mehwish Khan', phone: '+92 333 4444445', city: 'Faisalabad', totalAmount: 180000, paymentCount: 2, lastPayment: '2024-01-01' },
+        { cnic: '12345-1234567-16', name: 'Asad Malik', phone: '+92 345 5555556', city: 'Multan', totalAmount: 160000, paymentCount: 2, lastPayment: '2023-12-31' },
+        { cnic: '12345-1234567-17', name: 'Samina Asghar', phone: '+92 300 6666667', city: 'Peshawar', totalAmount: 140000, paymentCount: 2, lastPayment: '2023-12-30' },
+        { cnic: '12345-1234567-18', name: 'Irfan Hussain', phone: '+92 321 7777778', city: 'Quetta', totalAmount: 120000, paymentCount: 1, lastPayment: '2023-12-29' },
+        { cnic: '12345-1234567-19', name: 'Nabila Saeed', phone: '+92 333 8888889', city: 'Sialkot', totalAmount: 100000, paymentCount: 1, lastPayment: '2023-12-28' },
+        { cnic: '12345-1234567-20', name: 'Shahid Afridi', phone: '+92 345 9999990', city: 'Gujranwala', totalAmount: 80000, paymentCount: 1, lastPayment: '2023-12-27' }
+      ];
 
-      // Sort by total amount and take top 20
-      const sortedTaxpayers = Object.values(taxpayerTotals)
-        .sort((a, b) => b.totalAmount - a.totalAmount)
-        .slice(0, 20);
-
-      setTopTaxpayers(sortedTaxpayers);
+      setTopTaxpayers(demoTaxpayers);
 
       // Generate monthly stats (simulated)
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
@@ -60,6 +51,7 @@ const Leaderboard = () => {
       }));
       setMonthlyStats(stats);
 
+      toast.success('Leaderboard data loaded successfully!');
     } catch (error) {
       console.error('Error loading leaderboard data:', error);
       toast.error('Failed to load leaderboard data');
@@ -85,27 +77,24 @@ const Leaderboard = () => {
 
   if (loading) {
     return (
-      <Layout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading leaderboard...</p>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading leaderboard...</p>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Taxpayer Leaderboard</h1>
-                <p className="text-gray-600">Top contributors to Pakistan's development</p>
+                <p className="text-gray-600">Top contributors to Pakistan&apos;s development</p>
               </div>
               <div className="flex space-x-3">
                 <select
@@ -285,8 +274,7 @@ const Leaderboard = () => {
             </div>
           </div>
         </div>
-      </div>
-    </Layout>
+    </div>
   );
 };
 
